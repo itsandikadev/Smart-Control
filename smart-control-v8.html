@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Control</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --cream: #F6F2E9;
+    --paper: #FBF9F4;
+    --ink: #1E1B16;
+    --ink-soft: #6B6459;
+    --line: #DCD3BE;
+    --amber: #D9A833;
+    --amber-deep: #B3861F;
+    --error: #B3402A;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    min-height:100vh;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 48px 20px;
+  }
+
+  .hidden{ display:none !important; }
+
+  /* ---------- login ---------- */
+
+  .login-box{
+    width:100%;
+    max-width: 340px;
+  }
+
+  .login-box .mark{
+    font-family: 'Fraunces', serif;
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px 0;
+  }
+
+  .login-box .sub{
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 32px 0;
+  }
+
+  .field label{
+    display:block;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  .field input{
+    width:100%;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 13px 44px 13px 14px;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+  }
+
+  .field-wrap{
+    position: relative;
+  }
+
+  .toggle-visibility{
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    border-radius: 8px;
+  }
+
+  .toggle-visibility:hover{
+    color: var(--ink);
+    background: var(--cream);
+  }
+
+  .toggle-visibility svg{
+    width: 19px;
+    height: 19px;
+  }
+
+  .toggle-visibility .eye-off{
+    display: none;
+  }
+
+  .toggle-visibility.showing .eye{
+    display: none;
+  }
+
+  .toggle-visibility.showing .eye-off{
+    display: block;
+  }
+
+  .field input:focus{
+    outline: none;
+    border-color: var(--amber-deep);
+  }
+
+  .login-error{
+    font-size: 12px;
+    color: var(--error);
+    margin-top: 10px;
+    min-height: 16px;
+  }
+
+  .login-submit{
+    width:100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .login-submit:hover{
+    background: var(--amber-deep);
+  }
+
+  /* ---------- panel ---------- */
+
+  .panel{
+    width:100%;
+    max-width: 460px;
+  }
+
+  .heading{
+    margin-bottom: 40px;
+  }
+
+  .heading .room{
+    font-family: 'Fraunces', serif;
+    font-size: 40px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px 0;
+    color: var(--ink);
+  }
+
+  .heading .sub{
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .list{
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .row{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--line);
+    transition: background 160ms ease;
+    gap: 16px;
+  }
+
+  .row:last-child{
+    border-bottom: none;
+  }
+
+  .row.on{
+    background: rgba(217,168,51,0.07);
+  }
+
+  .device{
+    display:flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .device .id-row{
+    display:flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .device .id{
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+
+  .device .duration{
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  .row.on .device .duration{
+    color: var(--amber-deep);
+  }
+
+  .device .name-input{
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 0 0 2px 0;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .device .name-input::placeholder{
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+
+  .device .name-fixed{
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .device .name-input:hover{
+    border-bottom: 1px solid var(--line);
+  }
+
+  .device .name-input:focus{
+    outline: none;
+    border-bottom: 1px solid var(--amber-deep);
+  }
+
+  .state{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  .state .label{
+    font-size: 12px;
+    color: var(--ink-soft);
+    min-width: 52px;
+    text-align: right;
+  }
+
+  .row.on .state .label{
+    color: var(--amber-deep);
+  }
+
+  .switch{
+    position: relative;
+    width: 46px;
+    height: 26px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--cream);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .switch .knob{
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--ink-soft);
+    transition: transform 180ms ease, background 180ms ease;
+  }
+
+  .switch.on{
+    border-color: var(--amber-deep);
+    background: var(--amber);
+  }
+
+  .switch.on .knob{
+    transform: translateX(20px);
+    background: var(--paper);
+  }
+
+  .switch:focus-visible, .login-submit:focus-visible, .name-input:focus-visible{
+    outline: 2px solid var(--amber-deep);
+    outline-offset: 2px;
+  }
+
+  .all-off{
+    width: 100%;
+    margin-top: 16px;
+    padding: 15px;
+    background: transparent;
+    border: 1px solid var(--error);
+    border-radius: 10px;
+    color: var(--error);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+  }
+
+  .all-off:hover{
+    background: var(--error);
+    color: var(--paper);
+  }
+
+  .all-off:focus-visible{
+    outline: 2px solid var(--error);
+    outline-offset: 2px;
+  }
+
+  .chart-card{
+    margin-top: 24px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 24px;
+  }
+
+  .chart-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .chart-title{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .chart-reset{
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .chart-reset:hover{
+    color: var(--error);
+  }
+
+  .chart-empty{
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .chart-row{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .chart-row:last-child{
+    margin-bottom: 0;
+  }
+
+  .chart-label{
+    font-size: 13px;
+    width: 76px;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chart-track{
+    flex: 1;
+    height: 8px;
+    background: var(--cream);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .chart-fill{
+    height: 100%;
+    background: var(--amber);
+    border-radius: 999px;
+    transition: width 300ms ease;
+  }
+
+  .chart-value{
+    font-size: 12px;
+    color: var(--ink-soft);
+    width: 64px;
+    flex-shrink: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chart-summary{
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+
+  .chart-summary strong{
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .foot{
+    margin-top: 24px;
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .logout{
+    background:none;
+    border:none;
+    color: var(--ink-soft);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .logout:hover{
+    color: var(--ink);
+  }
+
+  @media (max-width: 400px){
+    .heading .room{ font-size: 32px; }
+    .row{ padding: 18px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="login-box" id="loginBox">
+    <p class="mark">Smart Control</p>
+    <p class="sub">Masuk untuk bisa mengakses kontrol penuh</p>
+
+    <div class="field">
+      <label for="password">Kata sandi</label>
+      <div class="field-wrap">
+        <input type="password" id="password" autocomplete="current-password">
+        <button type="button" class="toggle-visibility" id="toggleVisibility" aria-label="Tampilkan kata sandi">
+          <svg class="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 12s4-7 10.5-7 10.5 7 10.5 7-4 7-10.5 7-10.5-7-10.5-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3l18 18"/><path d="M10.6 10.6a3 3 0 0 0 4.24 4.24"/><path d="M6.6 6.7C3.9 8.3 1.5 12 1.5 12s4 7 10.5 7c1.9 0 3.5-.5 4.9-1.2M9.9 5.2C10.6 5.1 11.3 5 12 5c6.5 0 10.5 7 10.5 7-.3.6-1.2 1.9-2.6 3.3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <p class="login-error" id="loginError"></p>
+
+    <button class="login-submit" id="loginSubmit">Masuk</button>
+  </div>
+
+  <div class="panel hidden" id="panel">
+    <div class="heading">
+      <p class="room">Smart Control</p>
+      <p class="sub">Kontrol dari jarak jauh</p>
+    </div>
+
+    <div class="list" id="list"></div>
+
+    <button class="all-off" id="allOffBtn">Matikan semua</button>
+
+    <div class="chart-card">
+      <div class="chart-head">
+        <p class="chart-title">Pemakaian hari ini</p>
+        <button class="chart-reset" id="chartReset">Reset</button>
+      </div>
+      <div id="chartList"></div>
+      <div class="chart-summary" id="chartSummary"></div>
+    </div>
+
+    <div class="foot">
+      <span id="summary">— aktif</span>
+      <button class="logout" id="logoutBtn">Keluar</button>
+    </div>
+  </div>
+
+<script>
+  const PASSWORD_HASH = '52b9e5b43d807eab560aff5ac76b0018dfacff52ac0f6a0d52ee631c309f5f04';
+
+  async function sha256(text){
+    const data = new TextEncoder().encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  const devices = [
+    { id: 'T1', name: 'Lampu', on: false, onSince: null, totalMs: 0 },
+    { id: 'A1', name: '', on: false, onSince: null, totalMs: 0 },
+    { id: 'A2', name: '', on: false, onSince: null, totalMs: 0 },
+    { id: 'A3', name: '', on: false, onSince: null, totalMs: 0 },
+    { id: 'A4', name: '', on: false, onSince: null, totalMs: 0 },
+  ];
+
+  const list = document.getElementById('list');
+  const summary = document.getElementById('summary');
+  const loginBox = document.getElementById('loginBox');
+  const panel = document.getElementById('panel');
+  const passwordInput = document.getElementById('password');
+  const loginError = document.getElementById('loginError');
+
+  async function loadState(){
+    try{
+      const result = await window.storage.get('devices', false);
+      if (result && result.value){
+        const saved = JSON.parse(result.value);
+        const savedDevices = saved.devices || saved; // backward-compatible with older format
+        const isNewDay = saved.day && saved.day !== todayKey();
+
+        savedDevices.forEach((s, i) => {
+          if (devices[i]){
+            devices[i].name = s.name || '';
+            devices[i].on = !!s.on;
+            devices[i].onSince = isNewDay && s.on ? Date.now() : (s.onSince || null);
+            devices[i].totalMs = isNewDay ? 0 : (s.totalMs || 0);
+          }
+        });
+      }
+    }catch(e){
+      // no saved state yet
+    }
+  }
+
+  async function saveState(){
+    try{
+      await window.storage.set('devices', JSON.stringify({ day: todayKey(), devices }), false);
+    }catch(e){
+      console.error('Gagal menyimpan:', e);
+    }
+  }
+
+  function elapsedMs(d){
+    let ms = d.totalMs || 0;
+    if (d.on && d.onSince){
+      ms += Date.now() - d.onSince;
+    }
+    return ms;
+  }
+
+  function pad(n){
+    return String(n).padStart(2, '0');
+  }
+
+  function todayKey(){
+    const d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+
+  function formatDuration(ms){
+    const totalSeconds = Math.floor(ms / 1000);
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    return pad(h) + ':' + pad(m) + ':' + pad(s);
+  }
+
+  function durationLabel(d){
+    if (!d.on && (d.totalMs || 0) === 0) return 'Belum menyala';
+    return formatDuration(elapsedMs(d));
+  }
+
+  function renderChart(){
+    const chartList = document.getElementById('chartList');
+    const chartSummary = document.getElementById('chartSummary');
+    const values = devices.map(d => elapsedMs(d));
+    const max = Math.max(...values, 1);
+    const anyUsage = values.some(v => v > 0);
+
+    if (!anyUsage){
+      chartList.innerHTML = '<p class="chart-empty">Belum ada pemakaian hari ini.</p>';
+      chartSummary.innerHTML = 'Nyalakan salah satu perangkat untuk mulai melacak pemakaian.';
+      return;
+    }
+
+    chartList.innerHTML = devices.map((d, i) => {
+      const label = d.name || d.id;
+      const pct = Math.round((values[i] / max) * 100);
+      return `
+        <div class="chart-row">
+          <span class="chart-label">${label}</span>
+          <div class="chart-track"><div class="chart-fill" style="width:${pct}%"></div></div>
+          <span class="chart-value">${formatDuration(values[i])}</span>
+        </div>
+      `;
+    }).join('');
+
+    const totalMs = values.reduce((a, b) => a + b, 0);
+    const topIndex = values.indexOf(Math.max(...values));
+    const topLabel = devices[topIndex].name || devices[topIndex].id;
+
+    chartSummary.innerHTML =
+      'Total pemakaian semua perangkat: <strong>' + formatDuration(totalMs) + '</strong>. ' +
+      'Paling lama menyala: <strong>' + topLabel + '</strong>.';
+  }
+
+  function tick(){
+    devices.forEach((d, i) => {
+      const el = document.getElementById('dur-' + i);
+      if (el) el.textContent = durationLabel(d);
+    });
+    renderChart();
+  }
+
+  function render(){
+    list.innerHTML = '';
+    devices.forEach((d, i) => {
+      const row = document.createElement('div');
+      row.className = 'row' + (d.on ? ' on' : '');
+
+      const isFixed = d.id === 'T1';
+      const nameField = isFixed
+        ? `<span class="name-fixed">${d.name}</span>`
+        : `<input class="name-input" type="text" placeholder="Nama perangkat" value="${d.name.replace(/"/g, '&quot;')}">`;
+
+      row.innerHTML = `
+        <div class="device">
+          <div class="id-row">
+            <span class="id">${d.id}</span>
+            <span class="duration" id="dur-${i}">${durationLabel(d)}</span>
+          </div>
+          ${nameField}
+        </div>
+        <div class="state">
+          <span class="label">${d.on ? 'Aktif' : 'Mati'}</span>
+          <button class="switch ${d.on ? 'on' : ''}" role="switch" aria-checked="${d.on}" aria-label="${d.id}">
+            <span class="knob"></span>
+          </button>
+        </div>
+      `;
+
+      row.querySelector('.switch').addEventListener('click', () => {
+        if (devices[i].on){
+          devices[i].totalMs = (devices[i].totalMs || 0) + (Date.now() - devices[i].onSince);
+          devices[i].onSince = null;
+          devices[i].on = false;
+        } else {
+          devices[i].on = true;
+          devices[i].onSince = Date.now();
+        }
+        render();
+        saveState();
+      });
+
+      const nameInput = row.querySelector('.name-input');
+      if (nameInput){
+        nameInput.addEventListener('change', (e) => {
+          devices[i].name = e.target.value;
+          saveState();
+        });
+      }
+
+      list.appendChild(row);
+    });
+
+    const activeCount = devices.filter(d => d.on).length;
+    summary.textContent = activeCount + ' dari ' + devices.length + ' aktif';
+    renderChart();
+  }
+
+  function resetUsage(){
+    devices.forEach(d => {
+      d.totalMs = 0;
+      if (d.on){
+        d.onSince = Date.now();
+      }
+    });
+    render();
+    saveState();
+  }
+
+  function scheduleMidnightReset(){
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+    const msUntilMidnight = nextMidnight - now;
+    setTimeout(() => {
+      resetUsage();
+      scheduleMidnightReset();
+    }, msUntilMidnight);
+  }
+
+  async function tryLogin(){
+    const enteredHash = await sha256(passwordInput.value);
+    if (enteredHash === PASSWORD_HASH){
+      loginError.textContent = '';
+      loginBox.classList.add('hidden');
+      panel.classList.remove('hidden');
+    } else {
+      loginError.textContent = 'Kata sandi salah.';
+    }
+  }
+
+  document.getElementById('loginSubmit').addEventListener('click', tryLogin);
+  passwordInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') tryLogin();
+  });
+
+  const toggleBtn = document.getElementById('toggleVisibility');
+  toggleBtn.addEventListener('click', () => {
+    const showing = passwordInput.type === 'text';
+    passwordInput.type = showing ? 'password' : 'text';
+    toggleBtn.classList.toggle('showing', !showing);
+    toggleBtn.setAttribute('aria-label', showing ? 'Tampilkan kata sandi' : 'Sembunyikan kata sandi');
+  });
+
+  document.getElementById('allOffBtn').addEventListener('click', () => {
+    devices.forEach(d => {
+      if (d.on && d.onSince){
+        d.totalMs = (d.totalMs || 0) + (Date.now() - d.onSince);
+      }
+      d.on = false;
+      d.onSince = null;
+    });
+    render();
+    saveState();
+  });
+
+  document.getElementById('chartReset').addEventListener('click', resetUsage);
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    passwordInput.value = '';
+    panel.classList.add('hidden');
+    loginBox.classList.remove('hidden');
+  });
+
+  loadState().then(render);
+  setInterval(tick, 1000);
+  scheduleMidnightReset();
+</script>
+
+</body>
+</html>
